@@ -1,7 +1,8 @@
-import { fetchNotes } from '@/lib/api';
+import { fetchNotes } from '@/lib/api/clientApi';
 import NotesClient from './Notes.client';
 import { FetchNotesResponse } from '@/types/FetchNotesResponse';
 import type { Metadata } from "next";
+import { cookies } from 'next/headers';
 
 type Props = {
   params: Promise<{ slug: string[] }>;
@@ -36,6 +37,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function NotesPage({ params }: Props) {
   const { slug } = await params; 
 
+      const cookieStore = cookies();
+  const cookieHeader = cookieStore.toString(); // sends all cookies
+
   const tag = slug[0] === 'All' ? undefined : slug[0];
 
   const initialData: FetchNotesResponse = await fetchNotes({
@@ -43,7 +47,7 @@ export default async function NotesPage({ params }: Props) {
     search: "",
     tag: tag,
     perPage: 12,
-  });
+  }, cookieHeader);
 
-  return <NotesClient initialData={initialData} searchTag={tag} />;
+  return <NotesClient initialData={initialData} searchTag={tag} cookies={cookieHeader} />;
 }

@@ -8,7 +8,7 @@ import NoteList from '@/components/NoteList/NoteList';
 import SearchBox from '@/components/SearchBox/SearchBox';
 import Pagination from '@/components/Pagination/Pagination';
 
-import { fetchNotes } from '@/lib/api';
+import { fetchNotes } from '@/lib/api/clientApi';
 import { FetchNotesResponse } from '@/types/FetchNotesResponse';
 
 import css from './Notes.client.module.css';
@@ -17,12 +17,16 @@ import Link from 'next/link';
 interface NotesClientProps {
   initialData: FetchNotesResponse;
   searchTag?: string;
+  cookies: string
 }
 
-export default function NotesClient({ initialData, searchTag }: NotesClientProps) {
+export default function NotesClient({ initialData, searchTag, cookies }: NotesClientProps) {
   const [page, setPage] = useState(1);
   const [searchText, setSearchText] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  console.log(initialData, searchTag);
+  
 
   const debouncedUpdate = useMemo(
     () => debounce((value: string) => setDebouncedSearch(value), 300),
@@ -40,7 +44,7 @@ export default function NotesClient({ initialData, searchTag }: NotesClientProps
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['notes', { search: debouncedSearch, page, searchTag }],
-    queryFn: () => fetchNotes({ search: debouncedSearch, tag: searchTag, page, perPage: 12 }),
+    queryFn: () => fetchNotes({ search: debouncedSearch, tag: searchTag, page, perPage: 12 }, cookies),
     initialData: page === 1 && debouncedSearch === '' ? initialData : undefined,
     placeholderData: keepPreviousData,
   });

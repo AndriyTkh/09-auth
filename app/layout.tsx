@@ -4,6 +4,7 @@ import TanStackProvider from '@/components/TanStackProvider/TanStackProvider';
 import Header from '@/components/Header/Header';
 import Footer from '@/components/Footer/Footer';
 import "./global.css"
+import AuthProvider from '@/components/AuthProvider/AuthProvider';
 
 export const metadata: Metadata = {
   title: "NoteHub – Manage Your Notes Easily",
@@ -24,10 +25,10 @@ export const metadata: Metadata = {
 };
 
 const roboto = Roboto({
-  weight: ["400", "700"],        // Normal + Bold
-  subsets: ["latin"],            // Latin alphabet
-  variable: "--font-roboto",     // CSS variable name
-  display: "swap",               // Improve loading performance
+  weight: ["400", "700"],
+  subsets: ["latin"],    
+  variable: "--font-roboto", 
+  display: "swap",       
 });
 
 type RootLayoutProps = {
@@ -41,9 +42,11 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${roboto.variable}`}>
         <TanStackProvider>
-          <Header />
-          <main>{children}{modal}</main>
-          <Footer />
+          <AuthProvider>
+            <Header />
+            <main>{children}{modal}</main>
+            <Footer />
+          </AuthProvider>
         </TanStackProvider>
       </body>
     </html>
