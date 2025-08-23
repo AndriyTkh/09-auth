@@ -1,8 +1,8 @@
 import axios from 'axios';
-import type { User } from '@/types/user';
+// import type { User } from '@/types/user';
 
 export const api = axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_API_URL}/api`,
+  baseURL: `https://09-auth-psi-seven.vercel.app/api`,
   withCredentials: true,
 });
 
@@ -16,7 +16,7 @@ export const api = axios.create({
 //   return res.data;
 // }
 
-export async function updateUserProfile(data: Partial<User>): Promise<User> {
-  const res = await api.patch<User>('/users/me', data);
-  return res.data;
-}
+// export async function updateUserProfile(data: Partial<User>): Promise<User> {
+//   const res = await api.patch<User>('/users/me', data);
+//   return res.data;
+// }
