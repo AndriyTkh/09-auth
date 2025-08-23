@@ -1,24 +1,25 @@
-import { NextRequest, NextResponse } from "next/server";
-import { parse } from "cookie";
-import { checkServerSession } from "./lib/api/serverApi";
+import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { parse } from 'cookie';
+import { getAuthSession } from './lib/api/clientApi';
 
-const publicRoutes = ["/sign-in", "/sign-up"];
-const privateRoutes = ["/profile", "/notes"];
+const publicRoutes = ['/sign-in', '/sign-up'];
+const privateRoutes = ['/profile', '/notes'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const accessToken = request.cookies.get("accessToken")?.value;
-  const refreshToken = request.cookies.get("refreshToken")?.value;
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get('accessToken')?.value;
+  const refreshToken = cookieStore.get('refreshToken')?.value;
 
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
   const isPrivateRoute = privateRoutes.some((route) => pathname.startsWith(route));
 
-  // If no access token but refresh token exists, try refresh
   if (!accessToken && refreshToken) {
     try {
-      const data = await checkServerSession();
-      const setCookie = data?.headers["set-cookie"];
+      const data = await getAuthSession();
+      const setCookie = data?.headers['set-cookie'];
 
       if (setCookie) {
         const res = NextResponse.next();
@@ -28,16 +29,16 @@ export async function middleware(request: NextRequest) {
           const parsed = parse(cookieStr);
 
           if (parsed.accessToken) {
-            res.cookies.set("accessToken", parsed.accessToken, {
-              path: parsed.Path || "/",
-              maxAge: parsed["Max-Age"] ? Number(parsed["Max-Age"]) : undefined,
+            res.cookies.set('accessToken', parsed.accessToken, {
+              path: parsed.Path || '/',
+              maxAge: parsed['Max-Age'] ? Number(parsed['Max-Age']) : undefined,
               expires: parsed.Expires ? new Date(parsed.Expires) : undefined,
             });
           }
           if (parsed.refreshToken) {
-            res.cookies.set("refreshToken", parsed.refreshToken, {
-              path: parsed.Path || "/",
-              maxAge: parsed["Max-Age"] ? Number(parsed["Max-Age"]) : undefined,
+            res.cookies.set('refreshToken', parsed.refreshToken, {
+              path: parsed.Path || '/',
+              maxAge: parsed['Max-Age'] ? Number(parsed['Max-Age']) : undefined,
               expires: parsed.Expires ? new Date(parsed.Expires) : undefined,
             });
           }
@@ -45,26 +46,21 @@ export async function middleware(request: NextRequest) {
         return res;
       }
     } catch (err) {
-      console.error("Session refresh failed:", err);
+      console.error('Session refresh failed:', err);
     }
   }
 
-  // Not logged in
-  if (!accessToken) {
-    if (isPrivateRoute) {
-      return NextResponse.redirect(new URL("/sign-in", request.url));
-    }
-    return NextResponse.next();
+  if (!accessToken && isPrivateRoute) {
+    return NextResponse.redirect(new URL('/sign-in', request.url));
   }
 
-  // Already logged in → block access to sign-in / sign-up
-  if (isPublicRoute) {
-    return NextResponse.redirect(new URL("/", request.url));
+  if (accessToken && isPublicRoute) {
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ['/profile/:path*', '/notes/:path*', '/sign-in', '/sign-up'],
 };

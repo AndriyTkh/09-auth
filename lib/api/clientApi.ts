@@ -10,6 +10,23 @@ interface AuthPayload {
   password: string;
 }
 
+// ================ Session and Login ========
+
+export async function getAuthSession() {
+  const res = await api.get('/auth/session');
+  return res.data;
+}
+
+export async function getCurrentUser(): Promise<User> {
+  const res = await api.get<User>('/users/me');
+  return res.data;
+}
+
+export async function patchUserProfile(data: Partial<User>): Promise<User> {
+  const res = await api.patch<User>('/users/me', data);
+  return res.data;
+}
+
 export async function registerUser(data: AuthPayload): Promise<User> {
   const res = await api.post<User>('/auth/register', data);
   return res.data;
@@ -24,17 +41,10 @@ export async function logoutUser(): Promise<void> {
   await api.post('/auth/logout');
 }
 
-// GET /notes
-export async function fetchNotes(params: FetchNotesParams, cookies: string): Promise<FetchNotesResponse> {
-  console.log('Notes are fetched');
+// ================ NOTES API ========
 
-  const res = await api.get<FetchNotesResponse>('/notes', {
-    params,
-    headers: { Cookie: cookies },
-  });
-
-  console.log('Got response', res);
-
+export async function fetchNotes(params: FetchNotesParams): Promise<FetchNotesResponse> {
+  const res = await api.get<FetchNotesResponse>('/notes', { params });
   return res.data;
 }
 

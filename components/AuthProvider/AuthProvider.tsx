@@ -3,61 +3,84 @@
 import { ReactNode, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/authStore";
-import { checkSession } from "@/lib/api/api";
+import { getAuthSession, getCurrentUser } from "@/lib/api/clientApi";
 
-const privateRoutes = ['/profile', '/notes', '/dashboard'];
+const privateRoutes = ["/profile", "/notes", "/dashboard"];
 
 export default function AuthProvider({ children }: { children: ReactNode }) {
-  const { user, isAuthenticated, setUser, clearIsAuthenticated, loading, setLoading } = useAuthStore();
+  const {
+    user,
+    isAuthenticated,
+    setUser,
+    clearIsAuthenticated,
+    loading,
+    setLoading,
+  } = useAuthStore();
   const pathname = usePathname();
   const router = useRouter();
 
-  const isPrivateRoute = privateRoutes.some(route => pathname.startsWith(route));
+  const isPrivateRoute = privateRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const initAuth = async () => {
       setLoading(true);
 
       try {
-        const userData = await checkSession();
-        if (userData) {
-          setUser(userData);
-        } else {
-          clearIsAuthenticated();
-          if (isPrivateRoute) {
-            router.push('/sign-in');
+        const session = await getAuthSession();
+
+        if (session?.success) {
+          const userData = await getCurrentUser();
+          if (userData) {
+            setUser(userData);
+            return;
           }
+        }
+
+        clearIsAuthenticated();
+        if (isPrivateRoute) {
+          router.push("/sign-in");
         }
       } catch (error) {
         clearIsAuthenticated();
         if (isPrivateRoute) {
-          router.push('/sign-in');
+          router.push("/sign-in");
         }
       } finally {
         setLoading(false);
       }
     };
 
-    checkAuth();
-  }, [pathname, setUser, clearIsAuthenticated, setLoading, isPrivateRoute, router]);
+    initAuth();
+  }, [
+    pathname,
+    setUser,
+    clearIsAuthenticated,
+    setLoading,
+    isPrivateRoute,
+    router,
+  ]);
 
   useEffect(() => {
     if (!loading && isPrivateRoute && !isAuthenticated) {
       clearIsAuthenticated();
-      router.push('/sign-in');
+      router.push("/sign-in");
       return;
     }
   }, [isAuthenticated, isPrivateRoute, loading, clearIsAuthenticated, router]);
 
   if (loading) {
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        fontSize: '18px'
-      }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          fontSize: "18px",
+        }}
+      >
         Loading...
       </div>
     );
