@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { parse } from 'cookie';
-import { getAuthSession } from './lib/api/clientApi';
+import { getAuthSessionServer } from './lib/api/serverApi';
 
 const publicRoutes = ['/sign-in', '/sign-up'];
 const privateRoutes = ['/profile', '/notes'];
@@ -18,7 +18,7 @@ export async function middleware(request: NextRequest) {
 
   if (!accessToken && refreshToken) {
     try {
-      const data = await getAuthSession();
+      const data = await getAuthSessionServer();
       const setCookie = data?.headers['set-cookie'];
 
       if (setCookie) {

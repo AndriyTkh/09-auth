@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import css from "./EditProfilePage.module.css";
-import { getUserServer, patchUserProfileServer } from "@/lib/api/serverApi";
+import { getUserServer } from "@/lib/api/serverApi";
+import { patchUserProfile } from "@/lib/api/clientApi";
 import EditProfileForm from "./EditProfileForm.client";
 import type { User } from "@/types/user";
 import { redirect } from "next/navigation";
@@ -32,7 +33,7 @@ export default async function EditProfilePage() {
     }
 
     try {
-      const updated = await patchUserProfileServer({ username });
+      const updated = await patchUserProfile({ username });
       revalidatePath("/profile");
       return { ok: true, user: updated };
     } catch (e) {

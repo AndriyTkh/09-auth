@@ -5,6 +5,19 @@ import type { User } from '@/types/user';
 import { FetchNotesResponse } from '@/types/FetchNotesResponse';
 import { FetchNotesParams } from '@/types/FetchNotesParams';
 
+export async function getAuthSessionServer() {
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
+
+  const res = await api.get('/auth/session', {
+    headers: {
+      Cookie: cookieHeader,
+    },
+  });
+
+  return res.data;
+}
+
 export async function getUserServer(): Promise<User> {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();

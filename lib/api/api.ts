@@ -1,6 +1,5 @@
 import axios from 'axios';
 // import type { User } from '@/types/user';
-
 export const api = axios.create({
   baseURL: `https://09-auth-psi-seven.vercel.app/api`,
   withCredentials: true,
